@@ -1,0 +1,53 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PaintWithMouse : MonoBehaviour
+{
+    public Camera cam;
+    public Shader paintShader;
+
+    private RenderTexture paintMask;
+    private Material currentMaterial, paintMaterial;
+
+    [Range(1, 500)]
+    public float radius = 1;
+    [Range(0, 1)]
+    public float strength = 1;
+
+    void Start()
+    {
+        paintMaterial = new Material(paintShader);
+        paintMaterial.SetVector("_Color", Color.red);
+        paintMaterial.SetFloat("_Strength", strength);
+
+        currentMaterial = GetComponent<MeshRenderer>().material;
+
+        paintMask = new RenderTexture(1024, 1024, 0, RenderTextureFormat.ARGBFloat);
+        currentMaterial.SetTexture("_PaintMask", paintMask);
+    }
+
+    void Update()
+    {
+        if (Mouse.current.leftButton.isPressed)
+        {
+            Vector3 position = Mouse.current.position.ReadValue();
+            Ray ray = cam.ScreenPointToRay(position);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, 100.0f))
+            {
+                //Debug.DrawRay(ray.origin, hit.point - ray.origin, Color.red);
+                Debug.Log(hit.point);
+
+                paintMaterial.SetVector("_Coordinates", new Vector4(hit.textureCoord.x, hit.textureCoord.y, 0, 0));
+                paintMaterial.SetFloat("_Size", radius);
+
+                RenderTexture temp = RenderTexture.GetTemporary(paintMask.width, paintMask.height, 0, RenderTextureFormat.ARGBFloat);
+                Graphics.Blit(paintMask, temp);
+                Graphics.Blit(temp, paintMask, paintMaterial);
+                RenderTexture.ReleaseTemporary(temp);
+            }
+        }
+
+    }
+}
