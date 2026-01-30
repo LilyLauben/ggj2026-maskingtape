@@ -3,10 +3,12 @@ using UnityEngine.InputSystem;
 
 public class PaintWithMouse : MonoBehaviour
 {
-    public Camera cam;
+    public Camera mainCam;
+    public Camera tapeCam;
     public Shader paintShader;
 
     private RenderTexture paintMask;
+    private RenderTexture tapeMask;
     private Material currentMaterial, paintMaterial;
 
     [SerializeField, Range(1, 500)]
@@ -26,6 +28,11 @@ public class PaintWithMouse : MonoBehaviour
 
         paintMask = new RenderTexture(1024, 1024, 0, RenderTextureFormat.ARGBFloat);
         currentMaterial.SetTexture("_PaintMask", paintMask);
+
+        tapeMask = new RenderTexture(1024, 1024, 0, RenderTextureFormat.ARGBFloat);
+        tapeMask.depth = 16;
+        tapeCam.targetTexture = tapeMask;
+        currentMaterial.SetTexture("_TapeMask", tapeMask);
     }
 
     void Update()
@@ -33,10 +40,9 @@ public class PaintWithMouse : MonoBehaviour
         if (Mouse.current.leftButton.isPressed)
         {
             Vector3 position = Mouse.current.position.ReadValue();
-            Ray ray = cam.ScreenPointToRay(position);
+            Ray ray = mainCam.ScreenPointToRay(position);
             RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, 100.0f))
+            if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))
             {
                 //Debug.DrawRay(ray.origin, hit.point - ray.origin, Color.red);
                 Debug.Log(hit.point);
@@ -51,5 +57,11 @@ public class PaintWithMouse : MonoBehaviour
             }
         }
 
+    }
+
+    [ContextMenu("RemoveTape")]
+    public void RemoveTape()
+    {
+        currentMaterial.SetInt("_RemoveTape", 1);
     }
 }
