@@ -9,8 +9,10 @@ public class PaintWithMouse : MonoBehaviour
     private RenderTexture paintMask;
     private Material currentMaterial, paintMaterial;
 
-    [Range(1, 500)]
-    public float radius = 1;
+    [SerializeField, Range(1, 500)]
+    private float brushSizeX = 1;
+    [SerializeField, Range(1, 500)]
+    private float brushSizeY = 1;
     [Range(0, 1)]
     public float strength = 1;
 
@@ -40,7 +42,7 @@ public class PaintWithMouse : MonoBehaviour
                 Debug.Log(hit.point);
 
                 paintMaterial.SetVector("_Coordinates", new Vector4(hit.textureCoord.x, hit.textureCoord.y, 0, 0));
-                paintMaterial.SetFloat("_Size", radius);
+                paintMaterial.SetVector("_Size", new Vector4(brushSizeX, brushSizeY, 0, 0));
 
                 RenderTexture temp = RenderTexture.GetTemporary(paintMask.width, paintMask.height, 0, RenderTextureFormat.ARGBFloat);
                 Graphics.Blit(paintMask, temp);

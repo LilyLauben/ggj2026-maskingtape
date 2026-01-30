@@ -511,7 +511,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PaintWithMouse
   cam: {fileID: 650155464}
   paintShader: {fileID: 4800000, guid: 64405f50dda20ba47aed04ed77186dab, type: 3}
-  radius: 1
+  brushSizeX: 40
+  brushSizeY: 10
   strength: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
