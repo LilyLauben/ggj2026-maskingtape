@@ -15,6 +15,8 @@ public class TapeController : MonoBehaviour
     [SerializeField] private bool hasTapeBeenPlaced = true; //Used to determine if the current cut tape piece has been cut. Starts at true.
 
     [SerializeField] private bool inCuttingMode = false;
+    [SerializeField] private FMODUnity.EventReference tapeTearSound;
+
 
     [Header("Mouse Controls for Ripping")]
     public TapeBounds tapeLeftBounds;
@@ -147,6 +149,11 @@ public class TapeController : MonoBehaviour
         if (currentTape == null) throw new System.Exception("Failed to generate tape piece on cut.");
 
         //Update the tape roll to make it look like it was cut
+        if(!tapeTearSound.IsNull)
+        {
+            FMODUnity.RuntimeManager.PlayOneShot(tapeTearSound.Guid);
+        }
+
         CreateTapeRollPiece(tapeLength);
     }
 

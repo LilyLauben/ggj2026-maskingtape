@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1074758976304319412
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2028584276823323718}
+  - component: {fileID: 4374456825300977863}
+  m_Layer: 0
+  m_Name: TapeController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2028584276823323718
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1074758976304319412}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4374456825300977863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1074758976304319412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3f82ca8595bf304da9b60f0062c2c32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TapeController
+  tapePrefab: {fileID: 3984416274246541333, guid: 608859f515d9d934ca6bc6f6e56b3719, type: 3}
+  tapeRoll: {fileID: 0}
+  tapes: []
+  currentTape: {fileID: 0}
+  currentTapeRollPiece: {fileID: 0}
+  hasTapeBeenPlaced: 1
+  inCuttingMode: 0
+  tapeTearSound:
+    Guid:
+      Data1: -859376169
+      Data2: 1262479495
+      Data3: 478962354
+      Data4: 1554025929
+    Path: event:/tape_tear
+  tapeLeftBounds: {fileID: 0}
+  tapeRightBounds: {fileID: 0}
+  currentTapeBoundEntered: {fileID: 0}
+  mouseEnterPosition: {x: 0, y: 0}
+  mouseEnterTime: 0
