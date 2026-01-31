@@ -15,32 +15,19 @@ public class TapeController : MonoBehaviour
     [SerializeField] private bool hasTapeBeenPlaced = true; //Used to determine if the current cut tape piece has been cut. Starts at true.
 
     [SerializeField] private bool inCuttingMode = false;
-    [SerializeField] private bool hasSelectedStartingPoint = false; // Once in cut mode, you move the mouse up and down to indicate
-    // where you'd like to start the cut
-    [SerializeField] private bool hasSelectedAngle = false; // After selecting starting point, you then select angle of cut
 
-    [Header("Ripping UI")]
-    public GameObject cutSlider;
-    public GameObject cutAngleRotator;
-    public GameObject mashText;
-
-    [Header("Rip Controls")]
-    [SerializeField] private float positionSensitivity = 0.5f;
-    [SerializeField] private Vector2 positionBounds = new Vector2(-20f, 20f);
-    [SerializeField] private float angleSensitivity = 0.5f;
-    [SerializeField] private Vector2 angleBounds = new Vector2(-45f, 45f);
-    [SerializeField] private int currentButtonPresses = 0;
-    [SerializeField] private float mashTimerDuration = 2.0f; // Duration for the mash sequence in seconds
-    [SerializeField] private int minButtonPresses = 2; // Minimum presses for a successful rip
-
-
+    [Header("Mouse Controls for Ripping")]
+    public TapeBounds tapeLeftBounds;
+    public TapeBounds tapeRightBounds;
+    public GameObject currentTapeBoundEntered = null;
+    public Vector2 mouseEnterPosition;
+    bool isMouseInsideBounds = false;
+    public float mouseEnterTime;
 
     private void Awake()
     {
         playerInputActions = new PlayerInput();
         var playerInputMap = playerInputActions.Player;
-
-        playerInputMap.PrimaryClick.canceled += _ => OnPrimaryClick();
 
         playerInputMap.MouseScroll.performed += ctx =>
         {
@@ -53,64 +40,55 @@ public class TapeController : MonoBehaviour
 
         // This action will be used to read the mouse delta for both positioning and angle selection
         playerInputActions.Player.CutAngle.Enable();
+
+        tapeLeftBounds.SetTapeController(this);
+        tapeRightBounds.SetTapeController(this);
     }
 
     public void Start()
     {
         mainCamera = Camera.main;
-        cutSlider.SetActive(false);
-        cutAngleRotator.SetActive(false);
     }
 
     private void Update()
     {
-        if (inCuttingMode)
+        if (isMouseInsideBounds)
         {
-            Vector2 mouseDelta = playerInputActions.Player.CutAngle.ReadValue<Vector2>();
-
-            if (!hasSelectedStartingPoint)
-            {
-                UpdateCutPosition(mouseDelta.y);
-            }
-            else if (!hasSelectedAngle)
-            {
-                UpdateCutAngle(mouseDelta.y);
-            }
+            mouseEnterTime += Time.deltaTime;
         }
     }
 
-    private void UpdateCutPosition(float deltaY)
+    public void UpdateTapeBound(TapeBounds tapeBound, Vector2 position)
     {
-        if (cutSlider == null) return;
-
-        // Calculate the new Y position based on mouse delta and sensitivity
-        float newY = cutSlider.transform.localPosition.y + deltaY * positionSensitivity;
-
-        // Clamp the new position within the defined bounds
-        newY = Mathf.Clamp(newY, positionBounds.x, positionBounds.y);
-
-        // Apply the new local position
-        cutSlider.transform.localPosition = new Vector3(cutSlider.transform.localPosition.x, newY, cutSlider.transform.localPosition.z);
+        if (inCuttingMode)
+        {
+            if (currentTapeBoundEntered == null)
+            {
+                currentTapeBoundEntered = tapeBound.gameObject;
+                mouseEnterTime = 0f;
+                mouseEnterPosition = position;
+                isMouseInsideBounds = true;
+                return;
+            }
+            if (currentTapeBoundEntered == tapeBound.gameObject)
+            {
+                return;
+            }
+            else
+            {               
+                StartCut(mouseEnterTime, mouseEnterPosition, position);
+                currentTapeBoundEntered = null;
+                isMouseInsideBounds = false;
+            }
+        }
+        else
+        {
+            currentTapeBoundEntered = null;
+            isMouseInsideBounds = false;
+            mouseEnterTime = 0f;
+        }
     }
 
-    private void UpdateCutAngle(float deltaY)
-    {
-        if (cutAngleRotator == null) return;
-
-        // Calculate the new Z angle based on mouse delta and sensitivity
-        // Adding to the current angle allows for continuous adjustment
-        float currentAngle = cutAngleRotator.transform.localEulerAngles.z;
-        // Normalize angle to be within -180 to 180 for correct clamping
-        if (currentAngle > 180) currentAngle -= 360;
-
-        float newAngle = currentAngle + deltaY * angleSensitivity;
-
-        // Clamp the new angle within the defined bounds
-        newAngle = Mathf.Clamp(newAngle, angleBounds.x, angleBounds.y);
-
-        // Apply the new local rotation
-        cutAngleRotator.transform.localEulerAngles = new Vector3(0, 0, newAngle);
-    }
 
     private void OnEnable()
     {
@@ -129,7 +107,6 @@ public class TapeController : MonoBehaviour
         {
             hasTapeBeenPlaced = true; // THIS IS FOR TESTING PURPOSES ONLY! THIS SHOULD ONLY BE TRUE WHEN YOU 
             //ACTUALLY PLACE IT
-            cutSlider.SetActive(true);
             inCuttingMode = true;
             return;
         }
@@ -139,70 +116,24 @@ public class TapeController : MonoBehaviour
         }            
     }
 
-    private void OnPrimaryClick()
+    private void StartCut(float duration, Vector2 startPosition, Vector2 endPosition)
     {
-        if (!hasTapeBeenPlaced || !inCuttingMode) return; // Prevent multiple cuts without placing new tape
-        if (!hasSelectedStartingPoint)
+        if(duration < 0.25f)
         {
-            hasSelectedStartingPoint = true;
-            cutAngleRotator.SetActive(true);
+            duration = 0.25f;
+            mouseEnterTime = 0f;
         }
-        else if (!hasSelectedAngle)
+        if (duration > 2f)
         {
-            hasSelectedAngle = true;
-            mashText.SetActive(true);
-            StartCoroutine(MashTimerCoroutine());
+            Debug.Log("Rip failed! You took too long to swipe.");
         }
-        else
-        {
-            // This block runs during the mash timer
-            currentButtonPresses++;
-            Debug.Log($"Button presses: {currentButtonPresses}");
-        }
-    }
+        Vector2 startPosConverted = new Vector2(startPosition.x, (startPosition.y / Screen.height) * 10f);
+        Vector2 endPosConverted = new Vector2(endPosition.x, (endPosition.y / Screen.height) * 10f);
 
-    private IEnumerator MashTimerCoroutine()
-    {
-        Debug.Log("Mash sequence started. Click!");
-        yield return new WaitForSeconds(mashTimerDuration);
-        Debug.Log($"Mash sequence ended. Total clicks: {currentButtonPresses}");
+        float slope = (endPosition.y - startPosition.y) / (endPosition.x - startPosition.x);
+        float tapeLength = tapeRoll.transform.position.y - Mathf.Min(startPosConverted.y, endPosConverted.y);
 
-        // Start the cut based on the position of the cutSlider, angle of the cutRotator, and the amount of button presses
-        StartCut();
-
-        ResetCutting(); 
-    }
-
-    public void ResetCutting()
-    {
-        inCuttingMode = false;
-        hasSelectedStartingPoint = false;
-        hasSelectedAngle = false;
-        currentButtonPresses = 0;
-        
-        mashText.SetActive(false);
-        cutSlider.transform.localPosition = new Vector3(cutSlider.transform.localPosition.x, 0, cutSlider.transform.localPosition.z);
-        cutSlider.SetActive(false);
-        cutAngleRotator.transform.transform.localEulerAngles = new Vector3(0, 0, 0);
-        cutAngleRotator.SetActive(false);
-    }
-
-    private void StartCut()
-    {
-        if (currentButtonPresses < minButtonPresses)
-        {
-            Debug.Log("Rip failed! Not enough button presses.");
-            // No tape is generated, and the state is reset in ResetCutting()
-            return;
-        }
-
-        float cutSliderY = cutSlider.transform.localPosition.y / 55f; // Scale factor to match tape roll movement
-        float totalY = tapeRoll.transform.position.y + cutSliderY; //How tall the tape piece should be
-        //55 is considered an "inch"
-        
-        float angle = cutAngleRotator.transform.localEulerAngles.z;
-        Debug.Log($"Angle of cut is {angle}");
-        List<Vector3> newJaggedEdge = GenerateJaggedEdge(angle, currentButtonPresses);
+        List <Vector3> newJaggedEdge = GenerateJaggedEdge(slope, duration, tapeLength);
 
         // 4. Get the starting jagged edge from the previous tape piece
         List<Vector3> startJaggedEdge = new List<Vector3>();
@@ -212,20 +143,19 @@ public class TapeController : MonoBehaviour
         }
 
         //Generate the tape piece
-        GenerateTape(totalY, newJaggedEdge, startJaggedEdge);
+        GenerateTape(tapeLength, newJaggedEdge, startJaggedEdge);
         if (currentTape == null) throw new System.Exception("Failed to generate tape piece on cut.");
 
         //Update the tape roll to make it look like it was cut
-        CreateTapeRollPiece(totalY);
+        CreateTapeRollPiece(tapeLength);
     }
 
-    private List<Vector3> GenerateJaggedEdge(float angle, int presses)
+    private List<Vector3> GenerateJaggedEdge(float slope, float duration, float heightOfTape)
     {
         List<Vector3> jaggedEdge = new List<Vector3>();
         int segments = 10; // Number of points in the jagged edge
         float tapeWidth = tapePrefab.GetComponent<Tape>().getTapeWidth(); // The width of the tape
-        float maxJaggedness = 0.2f + (presses * 0.05f); // More presses = more dramatic edge
-        float slope = Mathf.Tan(angle * Mathf.Deg2Rad);
+        float maxJaggedness = 0.2f + (1 / (duration * 10)); // Faster = more dramatic edge
         float xDiff = tapeWidth / segments;
         for (int i = 0; i <= segments; i++)
         {
@@ -237,7 +167,15 @@ public class TapeController : MonoBehaviour
 
             float y_jagged = Random.Range(-maxJaggedness, maxJaggedness);
 
-            float y = y_baseline + y_jagged;
+            float y = y_baseline + heightOfTape;
+            if(slope >= 0)
+            {
+                y += y_jagged;
+            }
+            else
+            {
+                y -= y_jagged;
+            }
 
             // Create a point and rotate it by the cut angle
             Vector3 point = new Vector3(x, y, 0);
