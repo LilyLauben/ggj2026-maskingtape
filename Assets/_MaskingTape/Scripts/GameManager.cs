@@ -1,7 +1,11 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 public enum GameState { MENU, TAPING, PAINTING, RESULTS };
+
+[Serializable]
+public class GameMode { public string name; public Texture2D goalTexture; }
 
 public class GameManager : MonoBehaviour
 {
@@ -21,7 +25,7 @@ public class GameManager : MonoBehaviour
     }
 
     [SerializeField]
-    private (string name, Texture2D goalTexture)[] games;
+    private GameMode[] gameModes;
 
     private GameState state = GameState.MENU;
 
@@ -31,7 +35,7 @@ public class GameManager : MonoBehaviour
 
     public void StartGame(string _name)
     {
-        currentGoal = Array.Find(games, game => game.name == _name).goalTexture;
+        currentGoal = Array.Find(gameModes, game => game.name == _name).goalTexture;
         state = GameState.TAPING;
         OnGameStateChanged?.Invoke(this, state);
     }
@@ -44,6 +48,11 @@ public class GameManager : MonoBehaviour
     public Texture2D GetCurrentGoalTexture()
     {
         return currentGoal;
+    }
+
+    public string[] GetGameModeNames()
+    {
+        return gameModes.Select(gameModes => gameModes.name).ToArray();
     }
 
 }
