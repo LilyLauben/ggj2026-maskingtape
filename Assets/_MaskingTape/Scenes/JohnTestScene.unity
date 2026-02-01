@@ -119,17 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!114 &561957914 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6526995915299113009, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
-  m_PrefabInstance: {fileID: 8613469134897332988}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 94db4bfaeb2b01f43909744da279f19e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TapeBounds
 --- !u!1 &660142920
 GameObject:
   m_ObjectHideFlags: 0
@@ -575,13 +564,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1050506251}
     - target: {fileID: 4374456825300977863, guid: e5b71b7b33f2f3640a0fe33c8749b530, type: 3}
+      propertyPath: tapeBounds
+      value: 
+      objectReference: {fileID: 796004788}
+    - target: {fileID: 4374456825300977863, guid: e5b71b7b33f2f3640a0fe33c8749b530, type: 3}
       propertyPath: tapeLeftBounds
       value: 
       objectReference: {fileID: 796004788}
     - target: {fileID: 4374456825300977863, guid: e5b71b7b33f2f3640a0fe33c8749b530, type: 3}
       propertyPath: tapeRightBounds
       value: 
-      objectReference: {fileID: 561957914}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -595,6 +588,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1358367218104961167, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1677243980057399373, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2439787296449418240, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
       propertyPath: m_Name
       value: PhysicalTapeRoll
@@ -639,8 +640,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 180
       objectReference: {fileID: 0}
+    - target: {fileID: 5338612564211113194, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5338612564211113194, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5595343685078900958, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 5595343685078900958, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}

@@ -25,6 +25,12 @@ public class Tape : MonoBehaviour
         meshFilter.mesh = mesh;
     }
 
+    public void MoveTapeWithCursor(Vector3 worldPosition)
+    {
+        // Update the tape's position to follow the cursor
+        transform.position = worldPosition;
+    }
+
     public List<Vector3> GetLastJaggedEdge()
     {
         return lastJaggedEdge;

@@ -1,5 +1,7 @@
+using FMODUnity;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -35,6 +37,7 @@ public class TapeController : MonoBehaviour
             Vector2 val = ctx.ReadValue<Vector2>();
             float scrollDelta = val.y;
             MoveTapeRoll(scrollDelta);
+            RotateTape(scrollDelta);
         };
 
         playerInputMap.InitiateCut.performed += _ => OnCutMode();
@@ -55,6 +58,21 @@ public class TapeController : MonoBehaviour
         if (isMouseInsideBounds)
         {
             mouseEnterTime += Time.deltaTime;
+        }
+        if(!hasTapeBeenPlaced && currentTape != null)
+        {
+            // Convert mouse position to world coordinates
+            Vector2 screenPosition = Mouse.current.position.ReadValue();
+
+            // Set distance from camera - adjust this value to control how far from camera the tape appears
+            float distanceFromCamera = 8f; 
+
+            // Convert screen position to world position
+            Vector3 worldPosition = mainCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, distanceFromCamera));
+
+            // Make the tape follow the mouse
+            currentTape.GetComponent<Tape>().MoveTapeWithCursor(worldPosition);
+
         }
     }
 
@@ -91,7 +109,7 @@ public class TapeController : MonoBehaviour
 
     public void OnMouseExitTapeBounds(Vector2 exitPosition)
     {
-        if (inCuttingMode && currentTapeBoundEntered != null && isMouseInsideBounds)
+        if (inCuttingMode && currentTapeBoundEntered != null && isMouseInsideBounds && hasTapeBeenPlaced)
         {
             mouseExitPosition = exitPosition;
             StartCut(mouseEnterTime, mouseEnterPosition, mouseExitPosition);
@@ -115,8 +133,6 @@ public class TapeController : MonoBehaviour
         Debug.Log("Hit C for Cut Mode");
         if (!inCuttingMode)
         {
-            hasTapeBeenPlaced = true; // THIS IS FOR TESTING PURPOSES ONLY! THIS SHOULD ONLY BE TRUE WHEN YOU 
-            //ACTUALLY PLACE IT
             inCuttingMode = true;
             return;
         }
@@ -165,7 +181,7 @@ public class TapeController : MonoBehaviour
             }
         }
 
-        //Generate the tape piece
+        //Generate the tape piece, set currentTape to it
         GenerateTape(tapeLength, newJaggedEdge, startJaggedEdge, spawnPosition);
         if (currentTape == null) throw new System.Exception("Failed to generate tape piece on cut.");
 
@@ -176,6 +192,8 @@ public class TapeController : MonoBehaviour
         }
 
         CreateTapeRollPiece(tapeLength);
+
+        hasTapeBeenPlaced = false;
     }
 
     private float CalculateTapeLength(Vector2 mouseExitScreenPosition)
@@ -315,7 +333,20 @@ public class TapeController : MonoBehaviour
 
     public void MoveTapeRoll(float scrollDelta)
     {
+        if(!hasTapeBeenPlaced)
+        {
+            return; // Do not move the tape roll if the tape is following the mouse
+        }
         // Adjust the tape roll's position based on scroll input
         tapeRoll.MoveTape(scrollDelta);
+    }
+
+    public void RotateTape(float scrollDelta)
+    {
+        if(currentTape != null && !hasTapeBeenPlaced)
+        {
+            float rotationSpeed = 5f;
+            currentTape.transform.Rotate(0, 0, scrollDelta * rotationSpeed);
+        }
     }
 }
