@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class Tape : MonoBehaviour
