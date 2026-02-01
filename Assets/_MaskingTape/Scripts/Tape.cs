@@ -9,7 +9,7 @@ public class Tape : MonoBehaviour
     private Mesh mesh;
 
     [Header("Tape Settings")]
-    [SerializeField] private float tapeWidth = 0.4f;
+    [SerializeField] private float tapeWidth = 0.025f;
 
     [Header("Jagged Edge Settings")]
     [SerializeField] private int segments = 10;

@@ -103,6 +103,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4283a498cfe50274c9031017c3f9cd2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tape
-  tapeWidth: 2
+  tapeWidth: 0.25
   segments: 10
   maxJaggedness: 0.1
