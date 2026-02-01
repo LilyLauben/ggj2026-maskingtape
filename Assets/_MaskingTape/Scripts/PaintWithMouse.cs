@@ -72,7 +72,7 @@ public class PaintWithMouse : MonoBehaviour
     private void CheckPaint(GameState _state)
     {
         canPaint = _state == GameState.PAINTING;
-        if (_state == GameState.RESULTS) wallMaterial.SetInt("RemoveTape", 1);
+        if (_state == GameState.RESULTS) { wallMaterial.SetInt("_RemoveTape", 1); }
     }
 
     [ContextMenu("RemoveTape")]
