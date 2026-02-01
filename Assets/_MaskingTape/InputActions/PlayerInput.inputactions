@@ -7,7 +7,7 @@
             "id": "1a21d384-b90a-4ae9-8b4e-96b19f9bd6ba",
             "actions": [
                 {
-                    "name": "PrimaryClick",
+                    "name": "PlaceTape",
                     "type": "Button",
                     "id": "b0a5eba0-234c-434b-a3d1-d67460c6baf6",
                     "expectedControlType": "",
@@ -60,7 +60,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "PrimaryClick",
+                    "action": "PlaceTape",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

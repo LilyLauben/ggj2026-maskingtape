@@ -42,6 +42,8 @@ public class TapeController : MonoBehaviour
 
         playerInputMap.InitiateCut.performed += _ => OnCutMode();
 
+        playerInputMap.PlaceTape.performed += _ => OnPlaceTape();
+
         // This action will be used to read the mouse delta for both positioning and angle selection
         playerInputActions.Player.CutAngle.Enable();
 
@@ -76,6 +78,58 @@ public class TapeController : MonoBehaviour
         }
     }
 
+    public void OnPlaceTape()
+    {
+        // Only process click if we have a tape that hasn't been placed yet
+        if (!hasTapeBeenPlaced && currentTape != null)
+        {
+            PlaceTapeOnWall();
+        }
+    }
+    private void PlaceTapeOnWall()
+    {
+        // Get mouse position
+        Vector2 mousePosition = Mouse.current.position.ReadValue();
+
+        // Create a ray from the camera through the mouse position
+        Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+
+        // Perform raycast to find walls
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            // Check if we hit an object with the "Wall" tag
+            if (hit.collider.CompareTag("Wall"))
+            {
+                // Place the tape at the hit point
+                PlaceTapeAtPosition(hit.point, hit.normal);
+                currentTape.transform.parent = hit.collider.transform; //Parent the tape to the wall it was placed on
+                currentTape.layer = LayerMask.NameToLayer("Tape"); //Change layer to Tape
+                hasTapeBeenPlaced = true;
+                //currentTape = null;
+
+            }
+            else
+            {
+                Debug.Log("Clicked object is not tagged as 'Wall'. Found tag: " + hit.collider.tag);
+            }
+        }
+        else
+        {
+            Debug.Log("No object hit by raycast");
+        }
+    }
+
+    private void PlaceTapeAtPosition(Vector3 position, Vector3 surfaceNormal)
+    {
+        if (currentTape == null) return;
+
+        // Move the tape to the hit position
+        currentTape.transform.position = position;
+
+        // Optional: Add a small offset from the wall to prevent z-fighting
+        currentTape.transform.position += surfaceNormal * 0.01f;
+    }
     public void UpdateTapeBound(TapeBounds tapeBound, Vector2 position)
     {
         if (inCuttingMode)
@@ -134,6 +188,7 @@ public class TapeController : MonoBehaviour
         if (!inCuttingMode)
         {
             inCuttingMode = true;
+            tapeRoll.gameObject.SetActive(true); //Make tape roll visible
             return;
         }
         else //'C' does nothing if we are already in cut mode
@@ -194,6 +249,9 @@ public class TapeController : MonoBehaviour
         CreateTapeRollPiece(tapeLength);
 
         hasTapeBeenPlaced = false;
+        inCuttingMode = false;
+        //Turn off tape roll visibility until tape is placed
+        tapeRoll.gameObject.SetActive(false);
     }
 
     private float CalculateTapeLength(Vector2 mouseExitScreenPosition)

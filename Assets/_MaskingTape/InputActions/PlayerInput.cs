@@ -93,7 +93,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             ""id"": ""1a21d384-b90a-4ae9-8b4e-96b19f9bd6ba"",
             ""actions"": [
                 {
-                    ""name"": ""PrimaryClick"",
+                    ""name"": ""PlaceTape"",
                     ""type"": ""Button"",
                     ""id"": ""b0a5eba0-234c-434b-a3d1-d67460c6baf6"",
                     ""expectedControlType"": """",
@@ -146,7 +146,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""PrimaryClick"",
+                    ""action"": ""PlaceTape"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -201,7 +201,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
 }");
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
-        m_Player_PrimaryClick = m_Player.FindAction("PrimaryClick", throwIfNotFound: true);
+        m_Player_PlaceTape = m_Player.FindAction("PlaceTape", throwIfNotFound: true);
         m_Player_MouseScroll = m_Player.FindAction("MouseScroll", throwIfNotFound: true);
         m_Player_SecondaryClick = m_Player.FindAction("SecondaryClick", throwIfNotFound: true);
         m_Player_InitiateCut = m_Player.FindAction("InitiateCut", throwIfNotFound: true);
@@ -286,7 +286,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     // Player
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
-    private readonly InputAction m_Player_PrimaryClick;
+    private readonly InputAction m_Player_PlaceTape;
     private readonly InputAction m_Player_MouseScroll;
     private readonly InputAction m_Player_SecondaryClick;
     private readonly InputAction m_Player_InitiateCut;
@@ -303,9 +303,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         /// </summary>
         public PlayerActions(@PlayerInput wrapper) { m_Wrapper = wrapper; }
         /// <summary>
-        /// Provides access to the underlying input action "Player/PrimaryClick".
+        /// Provides access to the underlying input action "Player/PlaceTape".
         /// </summary>
-        public InputAction @PrimaryClick => m_Wrapper.m_Player_PrimaryClick;
+        public InputAction @PlaceTape => m_Wrapper.m_Player_PlaceTape;
         /// <summary>
         /// Provides access to the underlying input action "Player/MouseScroll".
         /// </summary>
@@ -348,9 +348,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         {
             if (instance == null || m_Wrapper.m_PlayerActionsCallbackInterfaces.Contains(instance)) return;
             m_Wrapper.m_PlayerActionsCallbackInterfaces.Add(instance);
-            @PrimaryClick.started += instance.OnPrimaryClick;
-            @PrimaryClick.performed += instance.OnPrimaryClick;
-            @PrimaryClick.canceled += instance.OnPrimaryClick;
+            @PlaceTape.started += instance.OnPlaceTape;
+            @PlaceTape.performed += instance.OnPlaceTape;
+            @PlaceTape.canceled += instance.OnPlaceTape;
             @MouseScroll.started += instance.OnMouseScroll;
             @MouseScroll.performed += instance.OnMouseScroll;
             @MouseScroll.canceled += instance.OnMouseScroll;
@@ -374,9 +374,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         /// <seealso cref="PlayerActions" />
         private void UnregisterCallbacks(IPlayerActions instance)
         {
-            @PrimaryClick.started -= instance.OnPrimaryClick;
-            @PrimaryClick.performed -= instance.OnPrimaryClick;
-            @PrimaryClick.canceled -= instance.OnPrimaryClick;
+            @PlaceTape.started -= instance.OnPlaceTape;
+            @PlaceTape.performed -= instance.OnPlaceTape;
+            @PlaceTape.canceled -= instance.OnPlaceTape;
             @MouseScroll.started -= instance.OnMouseScroll;
             @MouseScroll.performed -= instance.OnMouseScroll;
             @MouseScroll.canceled -= instance.OnMouseScroll;
@@ -430,12 +430,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     public interface IPlayerActions
     {
         /// <summary>
-        /// Method invoked when associated input action "PrimaryClick" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "PlaceTape" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnPrimaryClick(InputAction.CallbackContext context);
+        void OnPlaceTape(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "MouseScroll" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
