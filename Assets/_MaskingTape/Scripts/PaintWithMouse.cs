@@ -69,10 +69,39 @@ public class PaintWithMouse : MonoBehaviour
 
     }
 
+    private void Reset()
+    {
+        wallMaterial.SetTexture("_GoalMask", null);
+
+        // reset paint mask
+        RenderTexture temp = new RenderTexture(1024, 1024, 0, RenderTextureFormat.ARGBFloat);
+        Graphics.Blit(temp, paintMask);
+
+        //TODO: remove all tape objects
+    }
+
     private void CheckPaint(GameState _state)
     {
-        canPaint = _state == GameState.PAINTING;
-        if (_state == GameState.RESULTS) { wallMaterial.SetInt("_RemoveTape", 1); }
+        switch (_state)
+        {
+            case GameState.MENU:
+                Reset();
+                canPaint = false;
+                break;
+            case GameState.TAPING:
+                wallMaterial.SetTexture("_GoalMask", GameManager.instance.GetCurrentGoalTexture());
+                canPaint = false;
+                break;
+            case GameState.PAINTING:
+                canPaint = true;
+                break;
+            case GameState.RESULTS:
+                wallMaterial.SetInt("_RemoveTape", 1);
+                canPaint = false;
+                break;
+            default:
+                break;
+        }
     }
 
     [ContextMenu("RemoveTape")]
