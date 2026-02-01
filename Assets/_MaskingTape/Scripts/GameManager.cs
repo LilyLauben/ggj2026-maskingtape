@@ -31,18 +31,25 @@ public class GameManager : MonoBehaviour
 
     private Texture2D currentGoal;
 
-    public event EventHandler<GameState> OnGameStateChanged;
+    public delegate void OnGameStateChangedHandler(GameState _state);
+    public event OnGameStateChangedHandler OnGameStateChanged;
 
     public void StartGame(string _name)
     {
         currentGoal = Array.Find(gameModes, game => game.name == _name).goalTexture;
         state = GameState.TAPING;
-        OnGameStateChanged?.Invoke(this, state);
+        OnGameStateChanged?.Invoke(state);
     }
 
     public GameState GetState()
     {
         return state;
+    }
+
+    public void SetGameState(GameState _state)
+    {
+        state = _state;
+        OnGameStateChanged?.Invoke(state);
     }
 
     public Texture2D GetCurrentGoalTexture()
