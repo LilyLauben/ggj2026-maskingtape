@@ -238,7 +238,7 @@ public class TapeController : MonoBehaviour
 
         // Get the starting jagged edge from the previous tape piece
         List<Vector3> startJaggedEdge = new List<Vector3>();
-        if (currentTape != null)
+        /*if (currentTape != null)
         {
             Tape prevTape = currentTape.GetComponent<Tape>();
             List<Vector3> localStartJaggedEdge = prevTape.GetLastJaggedEdge();
@@ -248,7 +248,7 @@ public class TapeController : MonoBehaviour
                 Vector3 worldPoint = currentTape.transform.TransformPoint(localStartJaggedEdge[i]);
                 startJaggedEdge.Add(worldPoint);
             }
-        }
+        }*/
 
         //Generate the tape piece, set currentTape to it
         GenerateTape(tapeLength, newJaggedEdge, startJaggedEdge, spawnPosition);
