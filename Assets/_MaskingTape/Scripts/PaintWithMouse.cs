@@ -18,6 +18,9 @@ public class PaintWithMouse : MonoBehaviour
     [Range(0, 1)]
     public float strength = 1;
 
+    [SerializeField]
+    private CalculateScore calc;
+
     void Start()
     {
         paintMaterial = new Material(paintShader);
@@ -63,5 +66,6 @@ public class PaintWithMouse : MonoBehaviour
     public void RemoveTape()
     {
         currentMaterial.SetInt("_RemoveTape", 1);
+        calc.CalculateScoreFromTextures(tapeMask, paintMask, currentMaterial.GetTexture("_GoalMask"));
     }
 }
