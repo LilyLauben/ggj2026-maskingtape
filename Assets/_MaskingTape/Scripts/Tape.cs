@@ -35,69 +35,6 @@ public class Tape : MonoBehaviour
         return tapeWidth;
     }
 
-    public void CreateTape(Vector3 startPoint, Vector3 endPoint, List<Vector3> endJaggedEdge, List<Vector3> startJaggedEdge)
-    {
-        List<Vector3> vertices = new List<Vector3>();
-        List<int> triangles = new List<int>();
-        List<Vector2> uvs = new List<Vector2>();
-
-        Vector3 direction = (endPoint - startPoint).normalized;
-        Vector3 perpendicular = Vector3.Cross(direction, Vector3.forward).normalized * tapeWidth / 2f;
-
-        // Generate Start Edge vertices
-        if (startJaggedEdge != null && startJaggedEdge.Count > 0)
-        {
-            vertices.AddRange(startJaggedEdge);
-            for (int i = 0; i <= segments; i++)
-            {
-                uvs.Add(new Vector2(0, (float)i / segments));
-            }
-        }
-        else
-        {
-            // Create a straight start edge
-            for (int i = 0; i <= segments; i++)
-            {
-                float t = (float)i / segments;
-                vertices.Add(Vector3.Lerp(startPoint - perpendicular, startPoint + perpendicular, t));
-                uvs.Add(new Vector2(0, t));
-            }
-        }
-
-        // Generate End Edge vertices
-        lastJaggedEdge.Clear();
-        foreach(Vector3 jaggedPoint in endJaggedEdge)
-        {
-            vertices.Add(jaggedPoint);
-            lastJaggedEdge.Add(jaggedPoint);
-        }
-
-        // Make the triangles
-        for (int i = 0; i < segments; i++)
-        {
-            int baseIndex = i;
-            int nextIndex = i + 1;
-            int endBaseIndex = i + segments + 1;
-            int endNextIndex = i + segments + 2;
-
-            // First triangle
-            triangles.Add(baseIndex);
-            triangles.Add(endNextIndex);
-            triangles.Add(nextIndex);
-
-            // Second triangle
-            triangles.Add(baseIndex);
-            triangles.Add(endBaseIndex);
-            triangles.Add(endNextIndex);
-        }
-
-        mesh.Clear();
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.uv = uvs.ToArray();
-        mesh.RecalculateNormals();
-    }
-
     public void CreateTape(float heightOfTape, List<Vector3> endJaggedEdge, List<Vector3> startJaggedEdge)
     {
         List<Vector3> vertices = new List<Vector3>();
@@ -108,13 +45,13 @@ public class Tape : MonoBehaviour
         Vector3 startPoint = Vector3.zero;
         Vector3 endPoint = new Vector3(0, heightOfTape, 0);
 
-        // Generate Start Edge verticies
+        // Generate Start Edge vertices
         if (startJaggedEdge != null && startJaggedEdge.Count > 0)
         {
-            // Offset the provided startJaggedEdge vertices to the startPoint
+            // Convert world coordinates to local coordinates consistently
             for (int i = 0; i < startJaggedEdge.Count; i++)
             {
-                vertices.Add(startJaggedEdge[i] + startPoint);
+                vertices.Add(transform.InverseTransformPoint(startJaggedEdge[i]));
             }
         }
         else
@@ -134,16 +71,16 @@ public class Tape : MonoBehaviour
             uvs.Add(new Vector2((float)i / segments, 0));
         }
 
-        // Generate End Edge (Jagged) vertices
+        // Generate End Edge (Jagged) vertices and store them in local space
         lastJaggedEdge.Clear();
         if (endJaggedEdge != null && endJaggedEdge.Count > 0)
         {
-            // Offset the provided endJaggedEdge vertices to the endPoint
+            // Convert to local space and store
             foreach (Vector3 jaggedPoint in endJaggedEdge)
             {
-                Vector3 finalPoint = jaggedPoint + endPoint;
-                vertices.Add(finalPoint);
-                lastJaggedEdge.Add(finalPoint);
+                Vector3 localPoint = transform.InverseTransformPoint(jaggedPoint);
+                vertices.Add(localPoint);
+                lastJaggedEdge.Add(localPoint); // Store in local space for next tape piece
             }
         }
         else
@@ -197,23 +134,18 @@ public class Tape : MonoBehaviour
         List<int> triangles = new List<int>();
         List<Vector2> uvs = new List<Vector2>();
 
-        Vector3 direction = (endPoint - startPoint).normalized;
-        //Vector3 perpendicular = Vector3.Cross(direction, Vector3.forward).normalized * tapeWidth / 2f;
         Vector3 perpendicular = Vector3.Cross(Vector3.up, Camera.main.transform.forward).normalized * tapeWidth / 2f;
 
-        // --- Generate Start Edge Vertices ---
+        // Generate Start Edge Vertices (the jagged edge)
         if (topEdge != null && topEdge.Count > 0)
         {
-            foreach(Vector3 point in topEdge)
+            // topEdge is in local space from the previous tape piece
+            // Use the jagged edge pattern but invert the Y to start from 0
+            foreach (Vector3 point in topEdge)
             {
-                //We likely need to subtract the total height from the y before we do it else this will be just
-                //as tall as the new tape piece
-                Vector3 newPoint = new Vector3(point.x, Mathf.Abs(totalY - point.y), point.z);
+                // Flip the jagged edge pattern
+                Vector3 newPoint = new Vector3(point.x, 0, point.z);
                 vertices.Add(newPoint);
-            }
-            for (int i = 0; i <= segments; i++)
-            {
-                uvs.Add(new Vector2(0, (float)i / segments));
             }
         }
         else
@@ -223,19 +155,27 @@ public class Tape : MonoBehaviour
             {
                 float t = (float)i / segments;
                 vertices.Add(Vector3.Lerp(startPoint - perpendicular, startPoint + perpendicular, t));
-                uvs.Add(new Vector2(0, t));
             }
         }
 
+        // Add UVs for the start edge
+        for (int i = 0; i <= segments; i++)
+        {
+            uvs.Add(new Vector2(0, (float)i / segments));
+        }
+
         // Create a straight end edge
+        lastJaggedEdge.Clear();
         for (int i = 0; i <= segments; i++)
         {
             float t = (float)i / segments;
-            vertices.Add(Vector3.Lerp(endPoint - perpendicular, endPoint + perpendicular, t));
-            uvs.Add(new Vector2(0, t));
+            Vector3 point = Vector3.Lerp(endPoint - perpendicular, endPoint + perpendicular, t);
+            vertices.Add(point);
+            lastJaggedEdge.Add(point);
+            uvs.Add(new Vector2(1, t));
         }
 
-        // Make triangles
+        // Make triangles - use same winding order as CreateTape
         for (int i = 0; i < segments; i++)
         {
             int baseIndex = i;
@@ -245,11 +185,11 @@ public class Tape : MonoBehaviour
 
             // First triangle
             triangles.Add(baseIndex);
-            triangles.Add(endNextIndex);
+            triangles.Add(endBaseIndex);
             triangles.Add(nextIndex);
 
             // Second triangle
-            triangles.Add(baseIndex);
+            triangles.Add(nextIndex);
             triangles.Add(endBaseIndex);
             triangles.Add(endNextIndex);
         }

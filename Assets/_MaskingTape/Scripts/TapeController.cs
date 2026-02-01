@@ -17,12 +17,11 @@ public class TapeController : MonoBehaviour
     [SerializeField] private bool inCuttingMode = false;
     [SerializeField] private FMODUnity.EventReference tapeTearSound;
 
-
     [Header("Mouse Controls for Ripping")]
-    public TapeBounds tapeLeftBounds;
-    public TapeBounds tapeRightBounds;
+    public TapeBounds tapeBounds;
     public GameObject currentTapeBoundEntered = null;
     public Vector2 mouseEnterPosition;
+    public Vector2 mouseExitPosition; // Store the exit position
     bool isMouseInsideBounds = false;
     public float mouseEnterTime;
 
@@ -43,8 +42,7 @@ public class TapeController : MonoBehaviour
         // This action will be used to read the mouse delta for both positioning and angle selection
         playerInputActions.Player.CutAngle.Enable();
 
-        tapeLeftBounds.SetTapeController(this);
-        tapeRightBounds.SetTapeController(this);
+        tapeBounds.SetTapeController(this);
     }
 
     public void Start()
@@ -77,10 +75,10 @@ public class TapeController : MonoBehaviour
                 return;
             }
             else
-            {               
-                StartCut(mouseEnterTime, mouseEnterPosition, position);
-                currentTapeBoundEntered = null;
-                isMouseInsideBounds = false;
+            {
+                // Note: This will be called when moving between bounds, but the actual cut
+                // will be triggered by OnMouseExitTapeBounds when leaving the tape area entirely
+                return;
             }
         }
         else
@@ -91,6 +89,16 @@ public class TapeController : MonoBehaviour
         }
     }
 
+    public void OnMouseExitTapeBounds(Vector2 exitPosition)
+    {
+        if (inCuttingMode && currentTapeBoundEntered != null && isMouseInsideBounds)
+        {
+            mouseExitPosition = exitPosition;
+            StartCut(mouseEnterTime, mouseEnterPosition, mouseExitPosition);
+            currentTapeBoundEntered = null;
+            isMouseInsideBounds = false;
+        }
+    }
 
     private void OnEnable()
     {
@@ -115,12 +123,12 @@ public class TapeController : MonoBehaviour
         else //'C' does nothing if we are already in cut mode
         {
             return;
-        }            
+        }
     }
 
     private void StartCut(float duration, Vector2 startPosition, Vector2 endPosition)
     {
-        if(duration < 0.25f)
+        if (duration < 0.25f)
         {
             duration = 0.25f;
             mouseEnterTime = 0f;
@@ -128,28 +136,41 @@ public class TapeController : MonoBehaviour
         if (duration > 2f)
         {
             Debug.Log("Rip failed! You took too long to swipe.");
+            return;
         }
-        Vector2 startPosConverted = new Vector2(startPosition.x, (startPosition.y / Screen.height) * 10f);
-        Vector2 endPosConverted = new Vector2(endPosition.x, (endPosition.y / Screen.height) * 10f);
 
+        // Calculate slope for jagged edge
         float slope = (endPosition.y - startPosition.y) / (endPosition.x - startPosition.x);
-        float tapeLength = tapeRoll.transform.position.y - Mathf.Min(startPosConverted.y, endPosConverted.y);
 
-        List <Vector3> newJaggedEdge = GenerateJaggedEdge(slope, duration, tapeLength);
+        // Calculate tape length based on tape roll position and mouse exit position
+        float tapeLength = CalculateTapeLength(endPosition);
+        Debug.Log($"Slope: {slope}, Duration: {duration}, Tape Length: {tapeLength}");
+        // Determine the spawn position for the new tape piece
+        Vector3 spawnPosition = GetNextTapeSpawnPosition();
 
-        // 4. Get the starting jagged edge from the previous tape piece
+        // Generate jagged edge in local coordinates relative to spawn position
+        List<Vector3> newJaggedEdge = GenerateJaggedEdge(slope, duration, tapeLength, spawnPosition);
+
+        // Get the starting jagged edge from the previous tape piece
         List<Vector3> startJaggedEdge = new List<Vector3>();
         if (currentTape != null)
         {
-            startJaggedEdge = currentTape.GetComponent<Tape>().GetLastJaggedEdge();
+            Tape prevTape = currentTape.GetComponent<Tape>();
+            List<Vector3> localStartJaggedEdge = prevTape.GetLastJaggedEdge();
+            // Transform points from previous tape's local space to world space
+            for (int i = 0; i < localStartJaggedEdge.Count; i++)
+            {
+                Vector3 worldPoint = currentTape.transform.TransformPoint(localStartJaggedEdge[i]);
+                startJaggedEdge.Add(worldPoint);
+            }
         }
 
         //Generate the tape piece
-        GenerateTape(tapeLength, newJaggedEdge, startJaggedEdge);
+        GenerateTape(tapeLength, newJaggedEdge, startJaggedEdge, spawnPosition);
         if (currentTape == null) throw new System.Exception("Failed to generate tape piece on cut.");
 
         //Update the tape roll to make it look like it was cut
-        if(!tapeTearSound.IsNull)
+        if (!tapeTearSound.IsNull)
         {
             FMODUnity.RuntimeManager.PlayOneShot(tapeTearSound.Guid);
         }
@@ -157,13 +178,71 @@ public class TapeController : MonoBehaviour
         CreateTapeRollPiece(tapeLength);
     }
 
-    private List<Vector3> GenerateJaggedEdge(float slope, float duration, float heightOfTape)
+    private float CalculateTapeLength(Vector2 mouseExitScreenPosition)
+    {
+        // Get the tape roll's top position (where the tape starts)
+        Transform tapeRollTop = tapeRoll.GetTapeRollTopPieceLocation();
+        Vector3 tapeRollTopWorldPos = tapeRollTop.position;
+
+        // Convert the tape roll top position to screen coordinates
+        Vector2 tapeRollTopScreenPos = mainCamera.WorldToScreenPoint(tapeRollTopWorldPos);
+
+        // Calculate the distance in screen space
+        float screenDistance = tapeRollTopScreenPos.y - mouseExitScreenPosition.y;
+
+        // Convert screen distance to world distance
+        // We need to convert this properly based on camera distance and orthographic size
+        float worldDistance;
+        if (mainCamera.orthographic)
+        {
+            // For orthographic camera
+            worldDistance = (screenDistance / Screen.height) * (mainCamera.orthographicSize * 2f);
+        }
+        else
+        {
+            // For perspective camera - need to account for depth
+            float distanceToCamera = Vector3.Distance(mainCamera.transform.position, tapeRollTopWorldPos);
+            float worldHeight = 2f * distanceToCamera * Mathf.Tan(mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            worldDistance = (screenDistance / Screen.height) * worldHeight;
+        }
+
+        // Ensure minimum tape length
+        return Mathf.Max(worldDistance, 0.5f);
+    }
+
+    private Vector3 GetNextTapeSpawnPosition()
+    {
+        // Calculate spawn position based on previous tape or default position
+        if (currentTape != null)
+        {
+            // Position the new tape piece directly above the previous one
+            Tape prevTape = currentTape.GetComponent<Tape>();
+            List<Vector3> prevLastEdge = prevTape.GetLastJaggedEdge();
+            if (prevLastEdge.Count > 0)
+            {
+                // Get the center point of the previous tape's last edge in world space
+                Vector3 centerPoint = Vector3.zero;
+                foreach (Vector3 point in prevLastEdge)
+                {
+                    centerPoint += currentTape.transform.TransformPoint(point);
+                }
+                centerPoint /= prevLastEdge.Count;
+                return centerPoint;
+            }
+        }
+
+        // Default position if no previous tape - use tape roll position as reference
+        Transform tapeRollTop = tapeRoll.GetTapeRollTopPieceLocation();
+        return new Vector3(tapeRollTop.position.x, tapeRollTop.position.y, tapeRollTop.position.z);
+    }
+
+    private List<Vector3> GenerateJaggedEdge(float slope, float duration, float heightOfTape, Vector3 basePosition)
     {
         List<Vector3> jaggedEdge = new List<Vector3>();
         int segments = 10; // Number of points in the jagged edge
         float tapeWidth = tapePrefab.GetComponent<Tape>().getTapeWidth(); // The width of the tape
         float maxJaggedness = 0.2f + (1 / (duration * 10)); // Faster = more dramatic edge
-        float xDiff = tapeWidth / segments;
+
         for (int i = 0; i <= segments; i++)
         {
             // Calculate the x position, starting from the left edge of the tape
@@ -171,11 +250,10 @@ public class TapeController : MonoBehaviour
             float x = Mathf.Lerp(-tapeWidth / 2, tapeWidth / 2, t);
 
             float y_baseline = x * slope;
-
             float y_jagged = Random.Range(-maxJaggedness, maxJaggedness);
 
             float y = y_baseline + heightOfTape;
-            if(slope >= 0)
+            if (slope >= 0)
             {
                 y += y_jagged;
             }
@@ -184,48 +262,55 @@ public class TapeController : MonoBehaviour
                 y -= y_jagged;
             }
 
-            // Create a point and rotate it by the cut angle
-            Vector3 point = new Vector3(x, y, 0);
+            // Generate in world coordinates
+            Vector3 point = new Vector3(basePosition.x + x, basePosition.y + y, basePosition.z);
             jaggedEdge.Add(point);
         }
         return jaggedEdge;
     }
 
-    private void GenerateTape(float heightOfTape, List<Vector3> endJaggedEdge, List<Vector3> startJaggedEdge)
+    private void GenerateTape(float heightOfTape, List<Vector3> endJaggedEdge, List<Vector3> startJaggedEdge, Vector3 spawnPosition)
     {
         currentTape = Instantiate(tapePrefab, transform);
         if (currentTape != null)
         {
-            // We need a new CreateTape method that accepts a jagged edge for the end
+            // Position the tape at the calculated spawn position
+            currentTape.transform.position = spawnPosition;
+
+            // Create the tape mesh with the jagged edges
             currentTape.GetComponent<Tape>().CreateTape(heightOfTape, endJaggedEdge, startJaggedEdge);
             tapes.Add(currentTape);
             hasTapeBeenPlaced = false;
-            currentTape.transform.position = new Vector3(mainCamera.transform.position.x - 5f, mainCamera.transform.position.y, 0);
         }
     }
 
     // This method uses the most recent cut piece of tape, takes its jagged edge (the bottom one) and inverts
     // it. This inverted jagged edge is then used as the starting edge for the new tape piece created on the tape roll.
     // The bottom of this new tape piece is just straight.
-    
+
     public void CreateTapeRollPiece(float totalY)
     {
+        if (currentTape == null) return;
+
         List<Vector3> currentBottomJaggedEdge = currentTape.GetComponent<Tape>().GetLastJaggedEdge();
-        List<Vector3> invertedJaggedEdge = new List<Vector3>();
-        for (int i = 0; i < currentBottomJaggedEdge.Count; i++)
-        {
-            invertedJaggedEdge.Add(currentBottomJaggedEdge[i]);
-        }
+
         // Destroy the existing currentTapeRollPiece before creating a new one
-        Destroy(currentTapeRollPiece);
+        if (currentTapeRollPiece != null)
+        {
+            Destroy(currentTapeRollPiece);
+        }
 
         currentTapeRollPiece = Instantiate(tapePrefab, transform);
         Vector3 startPos = new Vector3(0, 0, 0);
         Vector3 endPos = new Vector3(0, 3f, 0);
-        currentTapeRollPiece.GetComponent<Tape>().CreateTapeRollPiece(startPos, endPos, invertedJaggedEdge, totalY);
+
+        // Position the tape roll piece first
         currentTapeRollPiece.transform.parent = tapeRoll.transform;
-        currentTapeRollPiece.transform.Rotate(0, 0, 180, Space.Self);
-        currentTapeRollPiece.transform.localPosition = new Vector3(currentTapeRollPiece.transform.position.x, currentTapeRollPiece.transform.position.y, -5.3f);
+        currentTapeRollPiece.transform.localPosition = new Vector3(0, 0, -5.3f);
+        currentTapeRollPiece.transform.localRotation = Quaternion.Euler(0, 0, 180);
+
+        // Create the mesh using the jagged edge (already in local space)
+        currentTapeRollPiece.GetComponent<Tape>().CreateTapeRollPiece(startPos, endPos, currentBottomJaggedEdge, totalY);
     }
 
     public void MoveTapeRoll(float scrollDelta)
