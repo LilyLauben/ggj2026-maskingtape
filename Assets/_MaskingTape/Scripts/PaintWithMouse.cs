@@ -3,23 +3,28 @@ using UnityEngine.InputSystem;
 
 public class PaintWithMouse : MonoBehaviour
 {
-    public Camera mainCam;
-    public Camera tapeCam;
-    public Shader paintShader;
-
-    private RenderTexture paintMask;
-    private RenderTexture tapeMask;
-    private Material currentMaterial, paintMaterial;
+    [SerializeField]
+    private Camera mainCam;
+    [SerializeField]
+    private Camera tapeCam;
+    [SerializeField]
+    private Shader paintShader;
 
     [SerializeField, Range(1, 500)]
     private float brushSizeX = 1;
     [SerializeField, Range(1, 500)]
     private float brushSizeY = 1;
-    [Range(0, 1)]
-    public float strength = 1;
+    [SerializeField, Range(0, 1)]
+    private float strength = 1;
 
     [SerializeField]
     private CalculateScore calc;
+
+    private RenderTexture paintMask;
+    private RenderTexture tapeMask;
+    private Material wallMaterial, paintMaterial;
+
+    private bool canPaint;
 
     void Start()
     {
@@ -27,20 +32,22 @@ public class PaintWithMouse : MonoBehaviour
         paintMaterial.SetVector("_Color", Color.red);
         paintMaterial.SetFloat("_Strength", strength);
 
-        currentMaterial = GetComponent<MeshRenderer>().material;
+        wallMaterial = GetComponent<MeshRenderer>().material;
 
         paintMask = new RenderTexture(1024, 1024, 0, RenderTextureFormat.ARGBFloat);
-        currentMaterial.SetTexture("_PaintMask", paintMask);
+        wallMaterial.SetTexture("_PaintMask", paintMask);
 
         tapeMask = new RenderTexture(1024, 1024, 0, RenderTextureFormat.ARGBFloat);
         tapeMask.depth = 16;
         tapeCam.targetTexture = tapeMask;
-        currentMaterial.SetTexture("_TapeMask", tapeMask);
+        wallMaterial.SetTexture("_TapeMask", tapeMask);
+
+        GameManager.instance.OnGameStateChanged += CheckPaint;
     }
 
     void Update()
     {
-        if (Mouse.current.leftButton.isPressed)
+        if (canPaint && Mouse.current.leftButton.isPressed)
         {
             Vector3 position = Mouse.current.position.ReadValue();
             Ray ray = mainCam.ScreenPointToRay(position);
@@ -62,10 +69,16 @@ public class PaintWithMouse : MonoBehaviour
 
     }
 
+    private void CheckPaint(GameState _state)
+    {
+        canPaint = _state == GameState.PAINTING;
+        if (_state == GameState.RESULTS) wallMaterial.SetInt("RemoveTape", 1);
+    }
+
     [ContextMenu("RemoveTape")]
     public void RemoveTape()
     {
-        currentMaterial.SetInt("_RemoveTape", 1);
-        calc.CalculateScoreFromTextures(tapeMask, paintMask, currentMaterial.GetTexture("_GoalMask"));
+        wallMaterial.SetInt("_RemoveTape", 1);
+        calc.CalculateScoreFromTextures(tapeMask, paintMask, wallMaterial.GetTexture("_GoalMask"));
     }
 }
