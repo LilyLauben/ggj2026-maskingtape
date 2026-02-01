@@ -940,6 +940,71 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d52824bb9891b634a8b53e7647252b03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TapeRoll
+--- !u!1001 &3758041032541716938
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2054354041849269184, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_Name
+      value: PaintRoller
+      objectReference: {fileID: 0}
+    - target: {fileID: 5450807138860561609, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: mainCam
+      value: 
+      objectReference: {fileID: 650155464}
+    - target: {fileID: 5450807138860561609, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: wallController
+      value: 
+      objectReference: {fileID: 846596165}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199762050691863078, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e49b9453fe42e9141b0c9b6672e42ffd, type: 3}
 --- !u!1001 &3961619418006045826
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1108,3 +1173,4 @@ SceneRoots:
   - {fileID: 1782418905}
   - {fileID: 3961619418006045826}
   - {fileID: 6875194276729695785}
+  - {fileID: 3758041032541716938}

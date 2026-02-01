@@ -45,27 +45,28 @@ public class PaintWithMouse : MonoBehaviour
         GameManager.instance.OnGameStateChanged += CheckPaint;
     }
 
-    void Update()
+    public void PaintWall(Vector2 _textureCoord, float _rotation)
     {
-        if (canPaint && Mouse.current.leftButton.isPressed)
-        {
-            Vector3 position = Mouse.current.position.ReadValue();
-            Ray ray = mainCam.ScreenPointToRay(position);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))
-            {
-                //Debug.DrawRay(ray.origin, hit.point - ray.origin, Color.red);
-                Debug.Log(hit.point);
+        // if (canPaint && Mouse.current.leftButton.isPressed)
+        // {
+        // Vector3 position = Mouse.current.position.ReadValue();
+        // Ray ray = mainCam.ScreenPointToRay(position);
+        // RaycastHit hit;
+        // if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))
+        // {
+        //Debug.DrawRay(ray.origin, hit.point - ray.origin, Color.red);
+        //Debug.Log(hit.point);
 
-                paintMaterial.SetVector("_Coordinates", new Vector4(hit.textureCoord.x, hit.textureCoord.y, 0, 0));
-                paintMaterial.SetVector("_Size", new Vector4(brushSizeX, brushSizeY, 0, 0));
+        // paintMaterial.SetVector("_Coordinates", new Vector4(hit.textureCoord.x, hit.textureCoord.y, 0, 0));
+        paintMaterial.SetVector("_Coordinates", new Vector4(_textureCoord.x, _textureCoord.y, 0, 0));
+        paintMaterial.SetVector("_Size", new Vector4(brushSizeX, brushSizeY, 0, 0));
 
-                RenderTexture temp = RenderTexture.GetTemporary(paintMask.width, paintMask.height, 0, RenderTextureFormat.ARGBFloat);
-                Graphics.Blit(paintMask, temp);
-                Graphics.Blit(temp, paintMask, paintMaterial);
-                RenderTexture.ReleaseTemporary(temp);
-            }
-        }
+        RenderTexture temp = RenderTexture.GetTemporary(paintMask.width, paintMask.height, 0, RenderTextureFormat.ARGBFloat);
+        Graphics.Blit(paintMask, temp);
+        Graphics.Blit(temp, paintMask, paintMaterial);
+        RenderTexture.ReleaseTemporary(temp);
+        //}
+        //}
 
     }
 
