@@ -57,6 +57,20 @@ public class TapeController : MonoBehaviour
 
     private void Update()
     {
+        if(GameManager.instance.GetState() == GameState.TAPING)
+        {
+            OnCutMode();
+        }
+        else
+        {
+            inCuttingMode = false;
+            tapeRoll.gameObject.SetActive(false);
+            if(currentTape != null)
+            {
+                Destroy(currentTape.gameObject);
+            }
+            currentTape = null;
+        }
         if (isMouseInsideBounds)
         {
             mouseEnterTime += Time.deltaTime;
