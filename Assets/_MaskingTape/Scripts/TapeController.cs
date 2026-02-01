@@ -65,10 +65,10 @@ public class TapeController : MonoBehaviour
         {
             inCuttingMode = false;
             tapeRoll.gameObject.SetActive(false);
-            if(currentTape != null)
+            /*if(currentTape != null)
             {
                 Destroy(currentTape.gameObject);
-            }
+            }*/
             currentTape = null;
         }
         if (isMouseInsideBounds)
