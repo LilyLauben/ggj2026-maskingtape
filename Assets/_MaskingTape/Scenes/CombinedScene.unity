@@ -447,7 +447,7 @@ GameObject:
   - component: {fileID: 846596165}
   m_Layer: 7
   m_Name: Plane
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1007,7 +1007,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2439787296449418240, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2509536773003002850, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
       propertyPath: m_LocalScale.x
@@ -1019,7 +1019,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2509536773003002850, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -24.7
       objectReference: {fileID: 0}
     - target: {fileID: 2509536773003002850, guid: f240cbd8e4adbab458390c7c1481e223, type: 3}
       propertyPath: m_LocalPosition.z
