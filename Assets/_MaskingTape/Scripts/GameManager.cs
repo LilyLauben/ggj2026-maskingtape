@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameMode[] gameModes;
 
+    [SerializeField]
     private GameState state = GameState.MENU;
 
     private Texture2D currentGoal;
